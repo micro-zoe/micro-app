@@ -1,6 +1,7 @@
 export enum ObservedAttrName {
   NAME = 'name',
   URL = 'url',
+  SUFFIX = 'suffix',
 }
 
 // app status

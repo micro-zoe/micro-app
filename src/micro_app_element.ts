@@ -29,6 +29,7 @@ import {
 import microApp from './micro_app'
 import dispatchLifecyclesEvent from './interact/lifecycles_event'
 import globalEnv from './libs/global_env'
+import { patchHistoryMethods } from './source'
 
 // record all micro-app elements
 export const elementInstanceMap = new Map<Element, boolean>()
@@ -40,7 +41,7 @@ export const elementInstanceMap = new Map<Element, boolean>()
 export function defineElement (tagName: string): void {
   class MicroAppElement extends HTMLElement implements MicroAppElementType {
     static get observedAttributes (): string[] {
-      return ['name', 'url']
+      return ['name', 'url', 'suffix']
     }
 
     constructor () {
@@ -58,6 +59,7 @@ export function defineElement (tagName: string): void {
     appUrl = '' // app url
     ssrUrl = '' // html path in ssr mode
     version = version
+    suffix = ''
 
     // 👇 Configuration
     // name: app name
@@ -76,11 +78,14 @@ export function defineElement (tagName: string): void {
         this.performWhenFirstCreated()
       }
 
-      defer(() => dispatchLifecyclesEvent(
-        this,
-        this.appName,
-        lifeCycles.CREATED,
-      ))
+      defer(() => {
+        dispatchLifecyclesEvent(
+          this,
+          this.appName,
+          lifeCycles.CREATED,
+        )
+        patchHistoryMethods.call(this, this.appName)
+      })
 
       this.initialMount()
     }
@@ -104,9 +109,14 @@ export function defineElement (tagName: string): void {
     }
 
     attributeChangedCallback (attr: ObservedAttrName, _oldVal: string, newVal: string): void {
+      const attrMap: {[key: string] : 'appName' | 'appUrl' | 'suffix' } = {
+        [ObservedAttrName.NAME]: 'appName',
+        [ObservedAttrName.URL]: 'appUrl',
+        [ObservedAttrName.SUFFIX]: 'suffix',
+      }
       if (
         this.legalAttribute(attr, newVal) &&
-        this[attr === ObservedAttrName.NAME ? 'appName' : 'appUrl'] !== newVal
+        this[attrMap[attr]] !== newVal
       ) {
         if (attr === ObservedAttrName.URL && !this.appUrl) {
           newVal = formatAppURL(newVal, this.appName)
@@ -132,6 +142,9 @@ export function defineElement (tagName: string): void {
             this.setAttribute('name', this.appName)
           }
           this.handleInitialNameAndUrl()
+        } else if (attr === ObservedAttrName.SUFFIX && this.suffix === '') {
+          // Gets the tag attribute value - by awesomedevin
+          this.suffix = newVal
         } else if (!this.isWating) {
           this.isWating = true
           defer(this.handleAttributeUpdate)
@@ -207,6 +220,7 @@ export function defineElement (tagName: string): void {
      */
     private handleAttributeUpdate = (): void => {
       this.isWating = false
+      this.suffix = formatAppName(this.getAttribute('suffix')) || ''
       const formatAttrName = formatAppName(this.getAttribute('name'))
       const formatAttrUrl = formatAppURL(this.getAttribute('url'), this.appName)
       if (this.legalAttribute('name', formatAttrName) && this.legalAttribute('url', formatAttrUrl)) {
@@ -326,6 +340,13 @@ export function defineElement (tagName: string): void {
       ))
     }
 
+    private preProcessingUrl (url: string): string {
+      const baseRoute = this.getBaseRouteCompatible()
+      // Support to fetch SSR multi-page projects - by awesomedevin
+      const res = `${url}${this.suffix}`
+      return baseRoute && this.getDisposeResult('ssr') ? res.replace(baseRoute, '') : res
+    }
+
     // create app instance
     private handleCreateApp (): void {
       /**
@@ -338,13 +359,14 @@ export function defineElement (tagName: string): void {
 
       const instance: AppInterface = new CreateApp({
         name: this.appName,
-        url: this.appUrl,
-        ssrUrl: this.ssrUrl,
+        url: this.preProcessingUrl(this.appUrl),
+        ssrUrl: this.preProcessingUrl(this.ssrUrl),
         container: this.shadowRoot ?? this,
         inline: this.getDisposeResult('inline'),
         scopecss: !(this.getDisposeResult('disableScopecss') || this.getDisposeResult('shadowDOM')),
         useSandbox: !this.getDisposeResult('disableSandbox'),
         baseroute: this.getBaseRouteCompatible(),
+        suffix: this.suffix,
       })
 
       appInstanceMap.set(this.appName, instance)

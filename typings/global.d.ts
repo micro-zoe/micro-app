@@ -102,7 +102,7 @@ declare module '@micro-app/types' {
     disconnectedCallback (): void
 
     // Hooks for element attributes change
-    attributeChangedCallback (a: 'name' | 'url', o: string, n: string): void
+    attributeChangedCallback (a: 'name' | 'url' | 'suffix', o: string, n: string): void
   }
 
   type prefetchParam = {

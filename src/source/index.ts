@@ -3,6 +3,7 @@ import { fetchSource } from './fetch'
 import { logError, CompletionPath, pureCreateElement } from '../libs/utils'
 import { extractLinkFromHtml, fetchLinksFromHtml } from './links'
 import { extractScriptElement, fetchScriptsFromHtml } from './scripts'
+import { appInstanceMap } from '../create_app'
 import scopedCSS from './scoped_css'
 
 /**
@@ -117,5 +118,41 @@ export default function extractHtml (app: AppInterface): void {
   }).catch((e) => {
     logError(`Failed to fetch data from ${app.url}, micro-app stop rendering`, app.name, e)
     app.onLoadError(e)
+  })
+}
+
+/**
+ * Define a property.
+ */
+function def (obj: Object, key: string, val: any, enumerable?: boolean) {
+  Object.defineProperty(obj, key, {
+    value: val,
+    enumerable: !!enumerable,
+    writable: true,
+    configurable: true
+  })
+}
+
+/**
+ * Intercept mutating methods - by awesomedevin
+ */
+export function patchHistoryMethods (appName: string): void {
+  const methodsToPatch: string[] = [
+    'pushState',
+    'replaceState',
+  ]
+  const historyObj = window.history
+
+  methodsToPatch.forEach(function (method) {
+  // cache original method
+    const original = historyObj[method as keyof History]
+    def(historyObj, method,
+      function mutator () {
+        const app = appInstanceMap.get(appName)
+        arguments[2] = arguments[2].includes(app?.baseroute) ? arguments[2] : `${app?.baseroute}${arguments[2]}`
+        const result = original.apply(this, Array.prototype.slice.apply(arguments))
+        return result
+      }
+    )
   })
 }
