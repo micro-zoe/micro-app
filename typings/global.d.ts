@@ -49,6 +49,7 @@ declare module '@micro-app/types' {
     container: HTMLElement | ShadowRoot | null // container maybe null, micro-app, shadowRoot, DIV(keep-alive)
     inline: boolean //  whether js runs in inline script mode, default is false
     scopecss: boolean // whether use css scoped, default is true
+    useBlob: boolean // whether use blob to load js, default is true
     useSandbox: boolean // whether use js sandbox, default is true
     baseroute: string // route prefix, default is ''
     source: sourceType // sources of css, js, html
@@ -180,6 +181,7 @@ declare module '@micro-app/types' {
     shadowDOM?: boolean
     destroy?: boolean
     inline?: boolean
+    disableBlob?: boolean
     disableScopecss?: boolean
     disableSandbox?: boolean
     ssr?: boolean

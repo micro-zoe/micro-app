@@ -33,6 +33,7 @@ export interface CreateAppParam {
   url: string
   ssrUrl?: string
   scopecss: boolean
+  useBlob?: boolean
   useSandbox: boolean
   inline?: boolean
   baseroute?: string
@@ -56,6 +57,7 @@ export default class CreateApp implements AppInterface {
   container: HTMLElement | ShadowRoot | null = null
   inline: boolean
   scopecss: boolean
+  useBlob: boolean
   useSandbox: boolean
   baseroute = ''
   source: sourceType
@@ -68,6 +70,7 @@ export default class CreateApp implements AppInterface {
     container,
     inline,
     scopecss,
+    useBlob,
     useSandbox,
     baseroute,
   }: CreateAppParam) {
@@ -79,6 +82,7 @@ export default class CreateApp implements AppInterface {
     this.name = name
     this.url = url
     this.useSandbox = useSandbox
+    this.useBlob = useBlob ?? true
     this.scopecss = this.useSandbox && scopecss
     this.source = {
       links: new Map<string, sourceLinkInfo>(),

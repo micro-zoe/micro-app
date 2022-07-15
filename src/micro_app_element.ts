@@ -308,6 +308,7 @@ export function defineElement (tagName: string): void {
         container: this.shadowRoot ?? this,
         inline: this.getDisposeResult('inline'),
         scopecss: !(this.getDisposeResult('disableScopecss') || this.getDisposeResult('shadowDOM')),
+        useBlob: !this.getDisposeResult('disableBlob'),
         useSandbox: !this.getDisposeResult('disableSandbox'),
         baseroute: this.getBaseRouteCompatible(),
       })

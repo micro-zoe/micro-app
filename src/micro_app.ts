@@ -121,6 +121,7 @@ export class MicroApp extends EventCenterForBaseApp implements MicroAppConfigTyp
   inline?: boolean
   disableScopecss?: boolean
   disableSandbox?: boolean
+  disableBlob?: boolean
   ssr?: boolean
   lifeCycles?: lifeCyclesType
   plugins?: plugins
@@ -155,6 +156,7 @@ export class MicroApp extends EventCenterForBaseApp implements MicroAppConfigTyp
       // @ts-ignore
       this.destory = options.destory
       this.inline = options.inline
+      this.disableBlob = options.disableBlob
       this.disableScopecss = options.disableScopecss
       this.disableSandbox = options.disableSandbox
       this.ssr = options.ssr

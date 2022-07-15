@@ -282,7 +282,7 @@ export function runScript (
     const code = bindScope(url, app, info.code, info)
     if (app.inline || info.module) {
       const scriptElement = pureCreateElement('script')
-      runCode2InlineScript(url, code, info.module, scriptElement, callback)
+      runCode2InlineScript(url, code, info.module, app.useBlob, scriptElement, callback)
       if (isDynamic) return scriptElement
       // TEST IGNORE
       app.container?.querySelector('micro-app-body')!.appendChild(scriptElement)
@@ -339,7 +339,7 @@ export function runDynamicRemoteScript (
     try {
       code = bindScope(url, app, code, info)
       if (app.inline || info.module) {
-        runCode2InlineScript(url, code, info.module, replaceElement as HTMLScriptElement, dispatchScriptOnLoadEvent)
+        runCode2InlineScript(url, code, info.module, app.useBlob, replaceElement as HTMLScriptElement, dispatchScriptOnLoadEvent)
       } else {
         runCode2Function(code, info)
       }
@@ -367,13 +367,18 @@ function runCode2InlineScript (
   url: string,
   code: string,
   module: boolean,
+  useBlob: boolean,
   scriptElement: HTMLScriptElement,
   callback?: moduleCallBack,
 ): void {
   if (module) {
     // module script is async, transform it to a blob for subsequent operations
-    const blob = new Blob([code], { type: 'text/javascript' })
-    scriptElement.src = URL.createObjectURL(blob)
+    if (useBlob) {
+      const blob = new Blob([code], { type: 'text/javascript' })
+      scriptElement.src = URL.createObjectURL(blob)
+    } else {
+      scriptElement.src = url
+    }
     scriptElement.setAttribute('type', 'module')
     if (callback) {
       callback.moduleCount && callback.moduleCount--

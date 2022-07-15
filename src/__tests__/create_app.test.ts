@@ -478,6 +478,24 @@ describe('create_app', () => {
     })
   })
 
+  // 关闭Blob
+  test('disableBlob in this app', async () => {
+    const microAppElement2 = document.createElement('micro-app')
+    microAppElement2.setAttribute('name', 'test-app21')
+    microAppElement2.setAttribute('url', `http://127.0.0.1:${ports.create_app}/dynamic/`)
+    microAppElement2.setAttribute('disableBlob', 'true')
+
+    appCon.appendChild(microAppElement2)
+    await new Promise((resolve) => {
+      microAppElement2.addEventListener('mounted', () => {
+        expect(appInstanceMap.get('test-app21')!.useBlob).toBeFalsy()
+        resolve(true)
+      }, false)
+    })
+
+    appCon.removeChild(microAppElement2)
+  })
+
   // 测试getActiveApps方法
   test('test getActiveApps method', async () => {
     // 因为上面已经执行unmountAllApps卸载了所有应用，所以这里长度为0
