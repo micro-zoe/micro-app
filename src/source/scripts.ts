@@ -28,6 +28,8 @@ import { globalKeyToBeCached } from '../constants'
 
 type moduleCallBack = Func & { moduleCount?: number, errorCount?: number }
 
+const systemJSScriptTypes = ['systemjs-module', 'systemjs-importmap']
+
 // Global scripts, reuse across apps
 export const globalScripts = new Map<string, string>()
 
@@ -52,7 +54,7 @@ export function extractScriptElement (
   if (script.hasAttribute('exclude') || checkExcludeUrl(src, app.name)) {
     replaceComment = document.createComment('script element with exclude attribute removed by micro-app')
   } else if (
-    (script.type && !['text/javascript', 'text/ecmascript', 'application/javascript', 'application/ecmascript', 'module', 'systemjs-module', 'systemjs-importmap'].includes(script.type)) ||
+    (script.type && !['text/javascript', 'text/ecmascript', 'application/javascript', 'application/ecmascript', 'module', ...systemJSScriptTypes].includes(script.type)) ||
     script.hasAttribute('ignore') || checkIgnoreUrl(src, app.name)
   ) {
     return null
@@ -62,6 +64,10 @@ export function extractScriptElement (
   ) {
     replaceComment = document.createComment(`${script.noModule ? 'noModule' : 'module'} script ignored by micro-app`)
   } else if (src) { // remote script
+    if (systemJSScriptTypes.includes(script.type)) {
+      script.src = src
+      return null
+    }
     const info = {
       code: '',
       isExternal: true,
