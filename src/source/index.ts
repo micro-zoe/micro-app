@@ -1,10 +1,11 @@
-import type { AppInterface } from '@micro-app/types'
+import type { AppInterface, sourceLinkInfo } from '@micro-app/types'
 import {
   logError,
   CompletionPath,
   pureCreateElement,
 } from '../libs/utils'
-import { extractLinkFromHtml, fetchLinksFromHtml } from './links'
+import { extractLinkFromHtml, fetchLinkSuccess } from './links'
+import { LinkLoader } from './loader/link'
 import { extractScriptElement, fetchScriptsFromHtml, checkExcludeUrl, checkIgnoreUrl } from './scripts'
 import scopedCSS from './scoped_css'
 
@@ -81,7 +82,17 @@ export function extractSourceDom (htmlStr: string, app: AppInterface) {
   flatChildren(wrapElement, app, microAppHead)
 
   if (app.source.links.size) {
-    fetchLinksFromHtml(wrapElement, app, microAppHead)
+    LinkLoader.getInstance().run(app, (url: string, info: sourceLinkInfo, data: string) => {
+      fetchLinkSuccess(
+        url,
+        info,
+        data,
+        microAppHead,
+        app,
+      )
+    }, () => {
+      app.onLoad(wrapElement)
+    })
   } else {
     app.onLoad(wrapElement)
   }

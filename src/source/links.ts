@@ -5,7 +5,6 @@ import type {
 import { fetchSource } from './fetch'
 import {
   CompletionPath,
-  promiseStream,
   pureCreateElement,
   defer,
   logError,
@@ -71,38 +70,6 @@ export function extractLinkFromHtml (
   } else if (replaceComment) {
     return parent.replaceChild(replaceComment, link)
   }
-}
-
-/**
- * Get link remote resources
- * @param wrapElement htmlDom
- * @param app app
- * @param microAppHead micro-app-head
- */
-export function fetchLinksFromHtml (
-  wrapElement: HTMLElement,
-  app: AppInterface,
-  microAppHead: Element,
-): void {
-  const linkEntries: Array<[string, sourceLinkInfo]> = Array.from(app.source.links.entries())
-
-  const fetchLinkPromise: Array<Promise<string>|string> = linkEntries.map(([url]) => {
-    return globalLinks.has(url) ? globalLinks.get(url)! : fetchSource(url, app.name)
-  })
-
-  promiseStream<string>(fetchLinkPromise, (res: {data: string, index: number}) => {
-    fetchLinkSuccess(
-      linkEntries[res.index][0],
-      linkEntries[res.index][1],
-      res.data,
-      microAppHead,
-      app,
-    )
-  }, (err: {error: Error, index: number}) => {
-    logError(err, app.name)
-  }, () => {
-    app.onLoad(wrapElement)
-  })
 }
 
 /**
