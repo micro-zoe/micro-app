@@ -26,7 +26,8 @@ export default defineConfig({
     (function () {
       let basePath = ''
       return {
-        name: "vite:micro-app",
+        // name即子应用的name值
+        name: "basename",
         apply: 'build',
         configResolved(config) {
           basePath = `${config.base}${config.build.assetsDir}/`
@@ -50,6 +51,8 @@ export default defineConfig({
   ],
 })
 ```
+
+>  **注意：** 子应用中 `name` 需与基座应用中 `name` 保持一致。
 
 **2、修改容器元素id**
 
@@ -97,7 +100,8 @@ const router = createRouter({
 **1、关闭沙箱并使用内联script模式**
 ```js
 <micro-app
-  name='child-name'
+   // name即子应用 vite.config.js 中name值
+  name='basename'
   url='http://localhost:3001/basename/'
   inline // 使用内联script模式
   disableSandbox // 关闭沙箱
@@ -114,8 +118,8 @@ import microApp from '@micro-zoe/micro-app'
 microApp.start({
   plugins: {
     modules: {
-      // appName即应用的name值
-      appName: [{
+      // name即子应用 vite.config.js 中name值
+      name: [{
         loader(code) {
           if (process.env.NODE_ENV === 'development') {
             // 这里 basename 需要和子应用vite.config.js中base的配置保持一致
