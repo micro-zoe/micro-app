@@ -1,5 +1,6 @@
 /* eslint-disable promise/param-names */
 import { commonStartEffect, releaseAllEffect, ports, setAppName } from '../common/initial'
+import { useProxyDocument } from '../common/proxy_document'
 import { appInstanceMap } from '../../create_app'
 import { globalLinks, fetchLinkSuccess } from '../../source/links'
 import microApp from '../..'
@@ -22,6 +23,8 @@ describe('source links', () => {
   afterAll(() => {
     return releaseAllEffect()
   })
+
+  useProxyDocument()
 
   // 创建一个动态的无效的link标签
   test('append a link with error href', async () => {

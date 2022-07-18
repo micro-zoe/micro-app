@@ -1,5 +1,6 @@
 /* eslint-disable promise/param-names, no-extend-native */
 import { commonStartEffect, releaseAllEffect, ports, setAppName, clearAppName } from '../common/initial'
+import { useProxyDocument, rawDocumentCreateElement } from '../common/proxy_document'
 import { appInstanceMap } from '../../create_app'
 import microApp from '../..'
 
@@ -29,6 +30,8 @@ describe('source patch', () => {
   afterAll(() => {
     return releaseAllEffect()
   })
+
+  useProxyDocument()
 
   // 子应用中操作元素的行为需要被拦截和处理
   test('element query', async () => {
@@ -158,7 +161,7 @@ describe('source patch', () => {
         expect(microAppBody.contains(prependDom1)).toBeTruthy()
         expect(microAppHead.contains(prependDom2)).toBeTruthy()
         clearAppName()
-        const prependDom3 = document.createElement('span')
+        const prependDom3 = rawDocumentCreateElement.call(document, 'span')
         document.body.prepend(prependDom3)
         const prependDom4 = document.createElement('span')
         document.head.prepend(prependDom4)

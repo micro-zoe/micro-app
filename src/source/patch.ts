@@ -258,10 +258,14 @@ export function patchElementPrototypeMethods (): void {
           getMappingNode(oldChild),
         )
       }
-      return globalEnv.rawRemoveChild.call(this, oldChild) as T
     }
 
-    return globalEnv.rawRemoveChild.call(this, oldChild) as T
+    try {
+      return globalEnv.rawRemoveChild.call(this, oldChild) as T
+    } catch (e) {
+      console.error(e)
+      return oldChild?.parentNode?.removeChild(oldChild) as T
+    }
   }
 
   // patch cloneNode
@@ -308,15 +312,6 @@ function markElement <T extends { __MICRO_APP_NAME__: string }> (element: T): T 
 // methods of document
 function patchDocument () {
   const rawDocument = globalEnv.rawDocument
-
-  // create element 👇
-  Document.prototype.createElement = function createElement (
-    tagName: string,
-    options?: ElementCreationOptions,
-  ): HTMLElement {
-    const element = globalEnv.rawCreateElement.call(this, tagName, options)
-    return markElement(element)
-  }
 
   Document.prototype.createElementNS = function createElementNS (
     namespaceURI: string,

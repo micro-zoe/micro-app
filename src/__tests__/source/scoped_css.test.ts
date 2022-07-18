@@ -1,5 +1,6 @@
 /* eslint-disable promise/param-names, no-extend-native */
 import { commonStartEffect, releaseAllEffect, ports, setAppName } from '../common/initial'
+import { useProxyDocument } from '../common/proxy_document'
 import { defer } from '../../libs/utils'
 import microApp from '../..'
 
@@ -14,6 +15,8 @@ describe('source scoped_css', () => {
   afterAll(() => {
     return releaseAllEffect()
   })
+
+  useProxyDocument()
 
   // 动态插入style标签，先插入后赋值
   test('set textContent after style element append to html', async () => {

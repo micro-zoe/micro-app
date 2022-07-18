@@ -1,5 +1,6 @@
 /* eslint-disable promise/param-names */
 import { commonStartEffect, releaseAllEffect, ports, setAppName } from '../common/initial'
+import { useProxyDocument } from '../common/proxy_document'
 import { appInstanceMap } from '../../create_app'
 import { globalScripts } from '../../source/scripts'
 import microApp from '../..'
@@ -46,6 +47,8 @@ describe('source scripts', () => {
   afterAll(() => {
     return releaseAllEffect()
   })
+
+  useProxyDocument()
 
   // 创建一个动态的无效的script标签
   test('append a script with error href', async () => {

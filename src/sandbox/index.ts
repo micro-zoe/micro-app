@@ -18,7 +18,7 @@ import {
   pureCreateElement,
 } from '../libs/utils'
 import microApp from '../micro_app'
-import bindFunctionToRawWindow from './bind_function'
+import bindFunctionToRawObject from './bind_function'
 import effect, {
   effectDocumentEvent,
   releaseEffectDocumentEvent,
@@ -192,7 +192,7 @@ export default class SandBox implements SandBoxInterface {
 
         const rawValue = Reflect.get(rawWindow, key)
 
-        return isFunction(rawValue) ? bindFunctionToRawWindow(rawWindow, rawValue) : rawValue
+        return isFunction(rawValue) ? bindFunctionToRawObject(rawWindow, rawValue) : rawValue
       },
       set: (target: microAppWindowType, key: PropertyKey, value: unknown): boolean => {
         if (this.active) {
@@ -345,14 +345,38 @@ export default class SandBox implements SandBoxInterface {
     return descriptor
   }
 
+  private createProxyDocument (sandboxName: string) {
+    const rawDocument = globalEnv.rawDocument
+    const createElement = function (tagName: string, options?: ElementCreationOptions): HTMLElement {
+      const element = globalEnv.rawCreateElement.call(rawDocument, tagName, options)
+      element.__MICRO_APP_NAME__ = sandboxName
+      return element
+    }
+
+    // @ts-ignore
+    const proxyDocument = new Proxy(rawDocument, {
+      get (_target: Document, p: string | symbol): unknown {
+        if (p === 'createElement') {
+          return createElement
+        }
+        const rawValue = Reflect.get(rawDocument, p)
+        return isFunction(rawValue) ? bindFunctionToRawObject(rawDocument, rawValue, 'DOCUMENT') : rawValue
+      },
+    })
+
+    return proxyDocument
+  }
+
   // set hijack Properties to microAppWindow
   private setHijackProperties (microAppWindow: microAppWindowType, appName: string): void {
     let modifiedEval: unknown, modifiedImage: unknown
+    const proxyDocument = this.createProxyDocument(appName)
+
     rawDefineProperties(microAppWindow, {
       document: {
         get () {
           throttleDeferForSetAppName(appName)
-          return globalEnv.rawDocument
+          return proxyDocument
         },
         configurable: false,
         enumerable: true,

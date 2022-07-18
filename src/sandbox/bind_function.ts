@@ -22,18 +22,19 @@ function isConstructor (value: FunctionConstructor & {__MICRO_APP_IS_CONSTRUCTOR
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export default function bindFunctionToRawWindow (rawWindow: Window, value: any): unknown {
-  if (value.__MICRO_APP_BOUND_WINDOW_FUNCTION__) return value.__MICRO_APP_BOUND_WINDOW_FUNCTION__
+export default function bindFunctionToRawObject<T = Window> (rawObject: T, value: any, key = 'WINDOW'): unknown {
+  const cacheKey = `__MICRO_APP_BOUND_${key}_FUNCTION__`
+  if (value[cacheKey]) return value[cacheKey]
 
   if (!isConstructor(value) && !isBoundedFunction(value)) {
-    const bindRawWindowValue = value.bind(rawWindow)
+    const bindRawObjectValue = value.bind(rawObject)
 
     for (const key in value) {
-      bindRawWindowValue[key] = value[key]
+      bindRawObjectValue[key] = value[key]
     }
 
     if (value.hasOwnProperty('prototype')) {
-      rawDefineProperty(bindRawWindowValue, 'prototype', {
+      rawDefineProperty(bindRawObjectValue, 'prototype', {
         value: value.prototype,
         configurable: true,
         enumerable: false,
@@ -41,7 +42,7 @@ export default function bindFunctionToRawWindow (rawWindow: Window, value: any):
       })
     }
 
-    return value.__MICRO_APP_BOUND_WINDOW_FUNCTION__ = bindRawWindowValue
+    return value[cacheKey] = bindRawObjectValue
   }
 
   return value

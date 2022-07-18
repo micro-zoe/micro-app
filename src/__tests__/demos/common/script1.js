@@ -41,7 +41,7 @@ eval(`console.log("在${window.__MICRO_APP_NAME__} eval中执行")`)
   document.dispatchEvent(clickEvent)
   expect(console.warn).toHaveBeenLastCalledWith(`子应用${window.__MICRO_APP_NAME__}的onclick`)
 
-  expect(document.onclick).toBe(onClickOfApp1)
+  expect(document.onclick.name).toBe('bound ' + onClickOfApp1.name)
 
   // 主动卸载的document click
   function handleDocClick () {
