@@ -88,6 +88,14 @@ export default class CreateApp implements AppInterface {
     this.useSandbox && (this.sandBox = new SandBox(name, url))
   }
 
+  // Async css from App
+  asyncStyleFromAppTag (microAppBody: HTMLElement): void {
+    const appTag = Array.from(document.body.getElementsByTagName('micro-app')).find(item => item.getAttribute('name') === this.name)
+    if (!appTag) return
+    const appTagStyle = (appTag as HTMLElement).style.cssText
+    microAppBody.style.cssText = appTagStyle
+  }
+
   // Load resources
   loadSourceCode (): void {
     this.state = appStates.LOADING_SOURCE_CODE

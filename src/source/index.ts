@@ -77,6 +77,8 @@ export function extractSourceDom (htmlStr: string, app: AppInterface) {
     app.onerror(new Error(msg))
     return logError(msg, app.name)
   }
+  // Async CSS - by awesomedevin
+  app.asyncStyleFromAppTag(microAppBody as HTMLBodyElement)
 
   flatChildren(wrapElement, app, microAppHead)
 

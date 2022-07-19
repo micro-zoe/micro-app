@@ -64,6 +64,9 @@ declare module '@micro-app/types' {
     // Error loading HTML
     onLoadError (e: Error): void
 
+    // sync style
+    asyncStyleFromAppTag(microAppBody: HTMLElement): void
+
     // mount app
     mount (
       container?: HTMLElement | ShadowRoot,
