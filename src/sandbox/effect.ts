@@ -1,14 +1,9 @@
 import type { microAppWindowType } from '@micro-app/types'
-import {
-  getCurrentAppName,
-  setCurrentAppName,
-  logWarn,
-  isFunction,
-  isBoundFunction,
-  rawDefineProperty,
-} from '../libs/utils'
 import { appInstanceMap } from '../create_app'
 import globalEnv from '../libs/global_env'
+import {
+  getCurrentAppName, isBoundFunction, isFunction, isShadowRoot, logWarn, rawDefineProperty, setCurrentAppName
+} from '../libs/utils'
 
 type MicroEventListener = EventListenerOrEventListenerObject & Record<string, any>
 type timeInfo = {
@@ -63,13 +58,22 @@ function overwriteDocumentOnClick (): void {
   rawOnClick && (document.onclick = rawOnClick)
 }
 
+function getBindDom (appName: string | null) {
+  const { rawDocument } = globalEnv
+  if (!appName) return rawDocument
+
+  const appIns = appInstanceMap.get(appName)
+  if (!appIns) return rawDocument
+
+  return isShadowRoot(appIns?.container) ? appIns?.container : rawDocument
+}
+
 /**
  * The document event is globally, we need to clear these event bindings when micro application unmounted
  */
 const documentEventListenerMap = new Map<string, Map<string, Set<MicroEventListener>>>()
 export function effectDocumentEvent (): void {
   const {
-    rawDocument,
     rawDocumentAddEventListener,
     rawDocumentRemoveEventListener,
   } = globalEnv
@@ -99,7 +103,12 @@ export function effectDocumentEvent (): void {
       }
       listener && (listener.__MICRO_APP_MARK_OPTIONS__ = options)
     }
-    rawDocumentAddEventListener.call(rawDocument, type, listener, options)
+    rawDocumentAddEventListener.call(
+      getBindDom(appName),
+      type,
+      listener,
+      options
+    )
   }
 
   document.removeEventListener = function (
@@ -117,7 +126,7 @@ export function effectDocumentEvent (): void {
         }
       }
     }
-    rawDocumentRemoveEventListener.call(rawDocument, type, listener, options)
+    rawDocumentRemoveEventListener.call(getBindDom(appName), type, listener, options)
   }
 }
 
