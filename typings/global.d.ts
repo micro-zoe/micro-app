@@ -31,6 +31,7 @@ declare module '@micro-app/types' {
     module: boolean // module type script
     isGlobal?: boolean // share js to global
     code2Function?: Function // code to Function
+    origin: HTMLScriptElement // origin script element
   }
 
   interface sourceType {

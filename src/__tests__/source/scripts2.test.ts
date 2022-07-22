@@ -96,4 +96,25 @@ describe('source scripts2', () => {
       }, false)
     })
   })
+
+  // 测试currentScript是否正确注入
+  test('test inject currentScript at runtime', async () => {
+    const microAppElement3 = document.createElement('micro-app')
+    microAppElement3.setAttribute('name', 'test-app3')
+    microAppElement3.setAttribute('url', `http://127.0.0.1:${ports.source_scripts2}/dynamic`)
+
+    appCon.appendChild(microAppElement3)
+    await new Promise((resolve) => {
+      microAppElement3.addEventListener('mounted', () => {
+        setAppName('test-app3')
+        const dynamicScript1 = document.createElement('script')
+        dynamicScript1.id = 'dynamicScript1'
+        dynamicScript1.textContent = 'console.warn("document.currentScript.id: " + document.currentScript.id);'
+        document.head.appendChild(dynamicScript1)
+
+        expect(console.warn).toHaveBeenLastCalledWith('document.currentScript.id: dynamicScript1')
+        resolve(true)
+      }, false)
+    })
+  })
 })
