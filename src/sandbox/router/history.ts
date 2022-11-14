@@ -129,6 +129,36 @@ export function navigateWithNativeEvent (
 }
 
 /**
+ * common handler for router.push/router.replace method
+ * @param appName app name
+ * @param methodName replaceState/pushState
+ * @param targetLocation target location
+ * @param state to.state
+ */
+export function navigateWithRawHistory (
+  appName: string,
+  methodName: string,
+  targetLocation: MicroLocation,
+  state: unknown,
+): void {
+  navigateWithNativeEvent(
+    appName,
+    methodName,
+    setMicroPathToURL(
+      appName,
+      targetLocation,
+    ),
+    false,
+    setMicroState(
+      appName,
+      state ?? null,
+    ),
+  )
+  // clear element scope after navigate
+  removeDomScope()
+}
+
+/**
  * update browser url when mount/unmount/hidden/show/attachToURL/attachAllToURL
  * just attach microRoute info to browser, dispatch event to base app(exclude child)
  * @param appName app.name

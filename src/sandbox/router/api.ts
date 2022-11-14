@@ -36,7 +36,7 @@ import {
 import { appInstanceMap } from '../../create_app'
 import { getActiveApps } from '../../micro_app'
 import globalEnv from '../../libs/global_env'
-import { navigateWithNativeEvent, attachRouteToBrowserURL } from './history'
+import { attachRouteToBrowserURL, navigateWithRawHistory } from './history'
 import bindFunctionToRawObject from '../bind_function'
 
 export interface RouterApi {
@@ -57,35 +57,6 @@ export interface CreateDefaultPage {
 }
 
 function createRouterApi (): RouterApi {
-  /**
-   * common handler for router.push/router.replace method
-   * @param appName app name
-   * @param methodName replaceState/pushState
-   * @param targetLocation target location
-   * @param state to.state
-   */
-  function navigateWithRawHistory (
-    appName: string,
-    methodName: string,
-    targetLocation: MicroLocation,
-    state: unknown,
-  ): void {
-    navigateWithNativeEvent(
-      appName,
-      methodName,
-      setMicroPathToURL(
-        appName,
-        targetLocation,
-      ),
-      false,
-      setMicroState(
-        appName,
-        state ?? null,
-      ),
-    )
-    // clear element scope after navigate
-    removeDomScope()
-  }
   /**
    * create method of router.push/replace
    * NOTE:

@@ -6,9 +6,9 @@ describe('LifeCycles Event', () => {
   describe('dispatchCustomEventToMicroApp', () => {
     test('使用 dispatchCustomEventToMicroApp 方法发送事件，window 可以接收到事件', () => {
       const callback = jest.fn()
-      window.addEventListener('event-app', callback)
+      window.addEventListener('unmount-app', callback)
 
-      dispatchCustomEventToMicroApp('event', 'app')
+      dispatchCustomEventToMicroApp('unmount', 'app')
 
       expect(callback).toBeCalled()
     })
@@ -36,18 +36,18 @@ describe('LifeCycles Event', () => {
         expect(e.target).toEqual(container)
         expect(e.currentTarget).toEqual(container)
       })
-      dispatchLifecyclesEvent(container, appName, 'mount')
+      dispatchLifecyclesEvent(container, appName, 'mounted')
     })
 
     test('发送 created 事件，主应用监听了这个事件可以被触发', () => {
       const container = document.createElement('div')
       const onCreated = jest.fn()
 
-      microApp.lifeCycles = { created: onCreated }
+      microApp.options.lifeCycles = { created: onCreated } as any
       dispatchLifecyclesEvent(container, appName, 'created')
 
       expect(onCreated).toBeCalled()
-      microApp.lifeCycles = undefined
+      microApp.options.lifeCycles = undefined
     })
   })
 })

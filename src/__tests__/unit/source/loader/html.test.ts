@@ -1,3 +1,4 @@
+// @ts-ignore
 import { AppInterface } from '@micro-app/types'
 
 import { waitFor } from '../../../common/util'
@@ -78,12 +79,12 @@ describe('HTMLLoader', () => {
 
   describe('plugin', () => {
     afterEach(() => {
-      microApp.plugins = undefined
+      microApp.options.plugins = undefined
     })
 
     test('预期插件配置里的 processHtml 可以生效', async () => {
       const processHtml = jest.fn().mockImplementation(code => code)
-      microApp.plugins = {
+      microApp.options.plugins = {
         global: undefined,
         modules: {
           'app-1': [{
@@ -100,13 +101,13 @@ describe('HTMLLoader', () => {
       htmlLoader.run(app, successCb)
 
       await waitFor(() => {
-        expect(processHtml).toBeCalledWith(MOCK_BASIC_HTML, app.url, undefined)
+        expect(processHtml).toBeCalledWith(MOCK_BASIC_HTML, app.url)
       })
     })
 
     test('预期插件 global 配置里的 processHtml 可以生效', async () => {
       const processHtml = jest.fn().mockImplementation(code => code)
-      microApp.plugins = {
+      microApp.options.plugins = {
         global: [{
           processHtml
         }]
@@ -120,7 +121,7 @@ describe('HTMLLoader', () => {
       htmlLoader.run(app, successCb)
 
       await waitFor(() => {
-        expect(processHtml).toBeCalledWith(MOCK_BASIC_HTML, app.url, undefined)
+        expect(processHtml).toBeCalledWith(MOCK_BASIC_HTML, app.url)
       })
     })
   })

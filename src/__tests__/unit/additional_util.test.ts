@@ -14,6 +14,7 @@ describe('Additional Util', () => {
     container
   } as AppInterface
 
+  window.__MICRO_APP_ENVIRONMENT__ = true
   initEnvOfNestedApp()
 
   beforeEach(() => {
@@ -26,7 +27,7 @@ describe('Additional Util', () => {
     appManager.clear()
   })
 
-  test('期望 listenUmountOfNestedApp 可以卸载嵌套子应用', () => {
+  test('期望 initEnvOfNestedApp 可以卸载嵌套子应用', () => {
     const unmountEvent = new CustomEvent('unmount')
     window.dispatchEvent(unmountEvent)
     expect(appManager.get(appName)).toBe(undefined)
