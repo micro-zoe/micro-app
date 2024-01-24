@@ -33,6 +33,7 @@ import {
 } from './libs/utils'
 import dispatchLifecyclesEvent, {
   dispatchCustomEventToMicroApp,
+  dispatchDocumentCustomEventToMicroApp
 } from './interact/lifecycles_event'
 import globalEnv from './libs/global_env'
 import microApp from './micro_app'
@@ -398,6 +399,12 @@ export default class CreateApp implements AppInterface {
         microGlobalEvent.ONMOUNT,
         microApp.getData(this.name, true)
       )
+
+      // dispatch DOMContentLoaded event to micro app
+      dispatchDocumentCustomEventToMicroApp(this, 'DOMContentLoaded')
+
+      // dispatch readystatechange event to micro app
+      dispatchDocumentCustomEventToMicroApp(this, 'readystatechange')
 
       // dispatch state event to micro app
       dispatchCustomEventToMicroApp(this, 'statechange', {

@@ -79,3 +79,31 @@ export function dispatchCustomEventToMicroApp (
 
   app.sandBox?.microAppWindow.dispatchEvent(event)
 }
+
+/**
+ * Dispatch document custom event to micro app
+ * @param app app
+ * @param eventName event name
+ * @param detail event detail
+ */
+export function dispatchDocumentCustomEventToMicroApp (
+  app: AppInterface,
+  eventName: string,
+  detail: Record<string, any> = {},
+): void {
+  const iframe = app.iframe
+
+  const element: HTMLElement | ShadowRoot = getRootContainer(app.container!)
+
+  const event = new CustomEvent(eventName, {
+    detail,
+  })
+
+  if (iframe) {
+    app.sandBox?.microAppWindow.document.dispatchEvent(event)
+  } else {
+    formatEventInfo(event, element)
+
+    element.dispatchEvent(event)
+  }
+}

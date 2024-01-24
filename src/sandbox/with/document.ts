@@ -16,6 +16,9 @@ import {
   appInstanceMap,
 } from '../../create_app'
 import microApp from '../../micro_app'
+import {
+  SCOPE_DOCUMENT_EVENT,
+} from '../../constants'
 
 /**
  * create proxyDocument and MicroDocument, rewrite document of child app
@@ -64,6 +67,7 @@ function createProxyDocument (
   } {
   const eventListenerMap = new Map<string, Set<MicroEventListener>>()
   const sstEventListenerMap = new Map<string, Set<MicroEventListener>>()
+  const microAppContainer: HTMLElement | ShadowRoot | null | undefined = appInstanceMap.get(appName)?.container
   let onClickHandler: unknown = null
   let sstOnClickHandler: unknown = null
   const {
@@ -77,6 +81,10 @@ function createProxyDocument (
     const element = rawCreateElement.call(rawDocument, tagName, options)
     element.__MICRO_APP_NAME__ = appName
     return element
+  }
+
+  function getEventTarget (type: string, bindTarget: Document | HTMLElement | ShadowRoot): Document {
+    return SCOPE_DOCUMENT_EVENT.includes(type) ? bindTarget : rawDocument
   }
 
   /**
@@ -97,7 +105,7 @@ function createProxyDocument (
       eventListenerMap.set(type, new Set([listener]))
     }
     listener && (listener.__MICRO_APP_MARK_OPTIONS__ = options)
-    rawAddEventListener.call(rawDocument, type, listener, options)
+    rawAddEventListener.call(getEventTarget(type, microAppContainer!), type, listener, options)
   }
 
   function removeEventListener (
@@ -109,7 +117,7 @@ function createProxyDocument (
     if (listenerList?.size && listenerList.has(listener)) {
       listenerList.delete(listener)
     }
-    rawRemoveEventListener.call(rawDocument, type, listener, options)
+    rawRemoveEventListener.call(getEventTarget(type, microAppContainer!), type, listener, options)
   }
 
   // reset snapshot data
@@ -171,7 +179,7 @@ function createProxyDocument (
     if (eventListenerMap.size) {
       eventListenerMap.forEach((listenerList, type) => {
         for (const listener of listenerList) {
-          rawRemoveEventListener.call(rawDocument, type, listener)
+          rawRemoveEventListener.call(getEventTarget(type, microAppContainer!), type, listener)
         }
       })
       eventListenerMap.clear()
@@ -190,6 +198,11 @@ function createProxyDocument (
           rawAddEventListener.call(rawDocument, 'click', value, false)
         }
         onClickHandler = value
+      }],
+      ['onreadystatechange', (value: unknown) => {
+        if (isFunction(value)) {
+          rawAddEventListener.call(getEventTarget('readystatechange', microAppContainer!), 'readystatechange', value, false)
+        }
       }]
     ])
     // external custom proxy

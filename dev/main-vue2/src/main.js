@@ -78,3 +78,15 @@ new Vue({
   router,
   render: h => h(App),
 }).$mount('#app')
+
+document.addEventListener('DOMContentLoaded', function (e) {
+  console.log(`基座应用 DOMContentLoaded`, document.readyState, e.type)
+})
+
+document.addEventListener('readystatechange', function () {
+  console.log(`基座应用 readystatechange`, document.readyState)
+})
+
+document.onreadystatechange = (e) => {
+  console.log(`基座应用 onreadystatechange`, document.readyState, e)
+}
