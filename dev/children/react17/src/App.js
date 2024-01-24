@@ -4,6 +4,8 @@ import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  console.log("读取document相关属性 ==========>", "title", document.title, "children", document.children, "characterSet", document.characterSet);
+  document.title="我是子应用title"
   // const [open, setOpen] = useState(false);
 
   // const showDrawer = () => {

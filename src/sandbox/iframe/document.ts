@@ -32,6 +32,7 @@ import {
 import {
   appInstanceMap,
 } from '../../create_app'
+import microApp from '../../micro_app'
 
 /**
  * TODO: 1、shadowDOM 2、结构优化
@@ -199,6 +200,24 @@ function patchDocumentProperty (
   const microRootDocument = microAppWindow.Document
   const microDocument = microAppWindow.document
 
+  const genProxyDocumentProps = () => {
+    // external custom proxy keys
+    return microApp.options.customProxyDocumentProps ? Object.keys(microApp.options.customProxyDocumentProps) : []
+  }
+  const customProxyDocumentPropsMap = genProxyDocumentProps()
+
+  const getCustomProxyDocument = (key: string) => {
+    const proxySetCallback = microApp.options.customProxyDocumentProps && microApp.options.customProxyDocumentProps[key].set
+    const proxyGetCallback = microApp.options.customProxyDocumentProps && microApp.options.customProxyDocumentProps[key].get
+    if (proxyGetCallback && isFunction(proxyGetCallback)) {
+      return proxyGetCallback() || rawDocument[key]
+    }
+    if (proxySetCallback && isFunction(proxySetCallback)) {
+      return proxySetCallback() || rawDocument[key]
+    }
+    return rawDocument[key]
+  }
+
   const getCommonDescriptor = (key: PropertyKey, getter: () => unknown): PropertyDescriptor => {
     const { enumerable } = Object.getOwnPropertyDescriptor(microRootDocument.prototype, key) || {
       enumerable: true,
@@ -231,7 +250,8 @@ function patchDocumentProperty (
 
     // TODO: shadowDOM
     proxy2RawDocOrShadowKeys.forEach((key) => {
-      result[key] = getCommonDescriptor(key, () => rawDocument[key])
+      const getCallback = customProxyDocumentPropsMap.includes(key) ? getCustomProxyDocument(key) : rawDocument[key]
+      result[key] = getCommonDescriptor(key, () => getCallback)
     })
 
     // TODO: shadowDOM
@@ -240,7 +260,8 @@ function patchDocumentProperty (
     })
 
     proxy2RawDocumentKeys.forEach((key) => {
-      result[key] = getCommonDescriptor(key, () => rawDocument[key])
+      const getCallback = customProxyDocumentPropsMap.includes(key) ? getCustomProxyDocument(key) : rawDocument[key]
+      result[key] = getCommonDescriptor(key, () => getCallback)
     })
 
     proxy2RawDocumentMethods.forEach((key) => {
@@ -259,9 +280,20 @@ function patchDocumentProperty (
       configurable: true,
       get: () => {
         throttleDeferForSetAppName(appName)
-        return rawDocument[tagName]
+        if (customProxyDocumentPropsMap.includes(tagName)) {
+          return getCustomProxyDocument(tagName)
+        } else {
+          return rawDocument[tagName]
+        }
       },
-      set: (value: unknown) => { rawDocument[tagName] = value },
+      set: (value: unknown) => {
+        const proxySetCallback = microApp.options.customProxyDocumentProps && microApp.options.customProxyDocumentProps[tagName as string].set
+        if (customProxyDocumentPropsMap.includes(tagName) && proxySetCallback && isFunction(proxySetCallback)) {
+          proxySetCallback(value)
+        } else {
+          rawDocument[tagName] = value
+        }
+      },
     })
   })
 }
