@@ -672,3 +672,22 @@ type BaseHTMLElementType = HTMLElement & {
 export function getBaseHTMLElement (): BaseHTMLElementType {
   return (window.rawWindow?.HTMLElement || window.HTMLElement) as BaseHTMLElementType
 }
+
+export function instanceOf<T extends new (...args: unknown[]) => unknown>(
+  instance: unknown,
+  constructor: T,
+): instance is T extends new (...args: unknown[]) => infer R ? R : boolean {
+  if (instance === null || instance === undefined) {
+    return false
+  } else if (!isFunction(constructor)) {
+    throw new TypeError("Right-hand side of 'instanceof' is not callable")
+  }
+  let proto = Object.getPrototypeOf(instance)
+  while (proto) {
+    if (proto === constructor.prototype) {
+      return true
+    }
+    proto = Object.getPrototypeOf(proto)
+  }
+  return false
+}

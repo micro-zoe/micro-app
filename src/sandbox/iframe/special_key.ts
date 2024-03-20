@@ -13,13 +13,11 @@ export const escape2RawWindowRegExpKeys = [
   /mutationObserver$/i,
   /height$|width$/i,
   /offset$/i,
-  // /event$/i,
   /selection$/i,
   /^range/i,
   /^screen/i,
   /^scroll/i,
   /X$|Y$/,
-  // /^(?:HTML\w*)?Element$/,
 ]
 
 export const uniqueDocumentElement = [
@@ -35,6 +33,14 @@ export const hijackMicroLocationKeys = [
   'port',
   'protocol',
   'origin',
+]
+
+export const hijackInstanceOfWindowRegExpKeys = [
+  /^((HTML|SVG)\w*|MathML)?Element$/,
+  /^(Node|Text|Attr|Comment|EventTarget|CharacterData|NamedNodeMap|ShadowRoot)$/,
+  /^Document(Type|Fragment)?$/,
+  /^(?!PopState).*Event$/,
+  /^DataTransfer/
 ]
 
 // 有shadowRoot则代理到shadowRoot否则代理到原生document上 (属性)

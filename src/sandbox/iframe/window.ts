@@ -11,6 +11,7 @@ import {
   isFunction,
   logWarn,
   includes,
+  instanceOf,
 } from '../../libs/utils'
 import {
   GLOBAL_KEY_TO_WINDOW,
@@ -20,6 +21,7 @@ import {
 import {
   escape2RawWindowKeys,
   escape2RawWindowRegExpKeys,
+  hijackInstanceOfWindowRegExpKeys,
 } from './special_key'
 
 /**
@@ -73,6 +75,22 @@ function patchWindowProperty (
               })
             }
           }
+          return true
+        }
+        return false
+      })
+
+      hijackInstanceOfWindowRegExpKeys.some((reg: RegExp) => {
+        if (reg.test(key) && key in rawWindow) {
+          rawDefineProperty(microAppWindow[key], Symbol.hasInstance, {
+            configurable: true,
+            enumerable: false,
+            value: (instance: unknown) => {
+              return instance instanceof rawWindow[key]
+                ? true
+                : instanceOf(instance, microAppWindow[key])
+            },
+          })
           return true
         }
         return false
