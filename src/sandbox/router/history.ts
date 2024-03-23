@@ -14,6 +14,7 @@ import {
   isURL,
   assign,
   removeDomScope,
+  isFunction,
 } from '../../libs/utils'
 import {
   setMicroPathToURL,
@@ -69,18 +70,57 @@ export function createMicroHistory (appName: string, microLocation: MicroLocatio
 
   if (isIframeSandbox(appName)) return { pushState, replaceState } as MicroHistory
 
+  // TODO: history的state 会有两个历史栈？？待解决
+  const customPushStateMap = new Map()
+  const customReplaceStateMap = new Map()
+  // 收集
+  function gatherCustomState (key: string, value: unknown) {
+    if (key === 'pushState') {
+      const originStateValue = (customPushStateMap.get(key) || [])
+      originStateValue.push(value)
+      customPushStateMap.set(key, originStateValue)
+    }
+    if (key === 'replaceState') {
+      const originStateValue = (customReplaceStateMap.get(key) || [])
+      originStateValue.push(value)
+      customReplaceStateMap.set(key, originStateValue)
+    }
+  }
+
+  // 执行
+  function executeCustomState (key: string) {
+    if (key === 'pushState') {
+      const originStateValue = (customPushStateMap.get(key) || [])
+      originStateValue?.forEach((item: unknown) => {
+        if (item && isFunction(item)) item()
+      })
+    }
+    if (key === 'replaceState') {
+      const originStateValue = (customReplaceStateMap.get(key) || [])
+      originStateValue?.forEach((item: unknown) => {
+        if (item && isFunction(item)) item()
+      })
+    }
+  }
+
+
   return new Proxy(rawHistory, {
     get (target: History, key: PropertyKey): HistoryProxyValue {
       if (key === 'state') {
         return getMicroState(appName)
       } else if (key === 'pushState') {
+        executeCustomState(key)
         return pushState
       } else if (key === 'replaceState') {
+        executeCustomState(key)
         return replaceState
       }
       return bindFunctionToRawTarget<History, HistoryProxyValue>(Reflect.get(target, key), target, 'HISTORY')
     },
     set (target: History, key: PropertyKey, value: unknown): boolean {
+      // 收集
+      if (key === 'pushState' || key === 'replaceState') gatherCustomState(key, value)
+
       Reflect.set(target, key, value)
       /**
        * If the set() method returns false, and the assignment happened in strict-mode code, a TypeError will be thrown.
