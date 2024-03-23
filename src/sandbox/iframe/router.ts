@@ -13,6 +13,7 @@ import {
   assign,
   createURL,
 } from '../../libs/utils'
+import globalEnv from '../../libs/global_env'
 
 export function patchRouter (
   appName: string,
@@ -25,9 +26,17 @@ export function patchRouter (
   const childFullPath = childStaticLocation.pathname + childStaticLocation.search + childStaticLocation.hash
 
   // rewrite microAppWindow.history
+  const rawLocation = globalEnv.rawWindow.location
   const microHistory = microAppWindow.history
   microAppWindow.rawReplaceState = microHistory.replaceState
-  assign(microHistory, createMicroHistory(appName, microAppWindow.location))
+  assign(microHistory, {
+    ...createMicroHistory(appName, microAppWindow.location),
+    go (delta?: number) {
+      return delta != null && +delta
+        ? microHistory.go(delta)
+        : rawLocation.reload()
+    },
+  })
 
   /**
    * Init microLocation before exec sandbox.start
