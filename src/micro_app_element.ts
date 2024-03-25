@@ -17,7 +17,6 @@ import {
   logError,
   logWarn,
   isString,
-  isFunction,
   CompletionPath,
   createURL,
   isPlainObject,
@@ -191,9 +190,10 @@ export function defineElement (tagName: string): void {
     private handleConnected (): void {
       if (!this.appName || !this.appUrl) return
 
-      if (this.getDisposeResult('shadowDOM') && !this.shadowRoot && isFunction(this.attachShadow)) {
-        this.attachShadow({ mode: 'open' })
-      }
+      // remove shadowDOM function
+      // if (this.getDisposeResult('shadowDOM') && !this.shadowRoot && isFunction(this.attachShadow)) {
+      //   this.attachShadow({ mode: 'open' })
+      // }
 
       this.updateSsrUrl(this.appUrl)
       if (appInstanceMap.has(this.appName)) {
