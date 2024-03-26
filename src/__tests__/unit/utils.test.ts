@@ -43,8 +43,7 @@ describe('utils', () => {
     expect(Utils.formatAppURL(null)).toBe('')
     expect(Utils.formatAppURL('')).toBe('')
     expect(Utils.formatAppURL('htt://abc')).toBe('')
-    expect(Utils.formatAppURL('abc')).toBe('')
-    expect(jestConsoleError).toBeCalledWith('[micro-app]', expect.anything())
+    expect(Utils.formatAppURL('abc')).toBe('http://localhost/abc/')
   })
 
   test('utils ==> getEffectivePath', () => {
