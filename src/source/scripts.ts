@@ -125,7 +125,13 @@ function getUniqueNonceSrc (): string {
 function setConvertScriptAttr (convertScript: HTMLScriptElement, attrs: AttrsType): void {
   attrs.forEach((value, key) => {
     if ((key === 'type' && value === 'module') || key === 'defer' || key === 'async') return
-    if (key === 'src') key = 'data-origin-src'
+    if (key === 'src') {
+      // FIXME：这个地方是不是将src 再次放出来，document.currentScript.src 为空，现在，很多 sdk 无法起效
+      globalEnv.rawSetAttribute.call(convertScript, key, value)
+
+      key = 'data-origin-src'
+    }
+
     globalEnv.rawSetAttribute.call(convertScript, key, value)
   })
 }
