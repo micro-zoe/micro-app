@@ -248,3 +248,29 @@ module.exports = {
   },
 }
 ```
+
+## 16、tinymce 编辑器使用 iframe 沙箱 + keep-alive，在主应用切回子应用的时候，富文本编辑器原本显示的东西没了，内容也无法输入了
+
+**原因：**设置 keep-alive 的子应用会对页面元素进行缓存，等到展示时再进行回显，但是 tinymce 是用 iframe 作为编辑区域的，在回显时可能没有办法做到完全回显
+
+**解决方式：**使用组件 key 机制，在子应用渲染时强渲染富文本组件
+
+组件代码，仅供参考
+```html
+<script setup lang="ts">
+import { ref } from 'vue';
+import RichText from '@/components/RichText/RichText.vue';
+const value = ref('');
+const forceRefreshComp = ref(0);
+window.__MICRO_APP_ENVIRONMENT__ &&
+  window.addEventListener('appstate-change', (e: any) => {
+    if (e.detail.appState === 'beforeshow') {
+      forceRefreshComp.value++;
+    }
+  });
+</script>
+<template>
+  <rich-text v-model="value" :key="forceRefreshComp"></rich-text>
+</template>
+```
+
