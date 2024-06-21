@@ -129,7 +129,9 @@ function patchDocumentPrototype (appName: string, microAppWindow: microAppWindow
       return rawMicroQuerySelector.call(_this, selectors)
     }
 
-    return appInstanceMap.get(appName)?.querySelector(selectors) ?? null
+    // iframe 沙箱里只能覆盖到dom，但是有些三方的sdk 需要操作到iframe 的 head 里的内容，需要将范围扩大兜底
+    const instanceSelectorResult = appInstanceMap.get(appName)?.querySelector(selectors) ?? null
+    return instanceSelectorResult ?? (rawMicroQuerySelector.call(this, selectors) ?? null)
   }
 
   function querySelectorAll (this: Document, selectors: string): any {
@@ -142,7 +144,9 @@ function patchDocumentPrototype (appName: string, microAppWindow: microAppWindow
       return rawMicroQuerySelectorAll.call(_this, selectors)
     }
 
-    return appInstanceMap.get(appName)?.querySelectorAll(selectors) ?? []
+    // iframe 沙箱里只能覆盖到dom，但是有些三方的sdk 需要操作到iframe 的 head 里的内容，需要将范围扩大兜底
+    const instanceSelectorResults = appInstanceMap.get(appName)?.querySelectorAll(selectors) ?? []
+    return instanceSelectorResults?.length > 0 ? instanceSelectorResults : (rawMicroQuerySelectorAll.call(this, selectors) ?? [])
   }
 
   microRootDocument.prototype.querySelector = querySelector
