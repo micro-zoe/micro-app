@@ -13,6 +13,7 @@ import {
   isNode,
   isMicroAppBody,
   throttleDeferForSetAppName,
+  isFunction,
 } from '../../libs/utils'
 import {
   updateElementInfo,
@@ -164,6 +165,12 @@ function patchIframeNode (
     configurable: true,
     enumerable: true,
     get () {
+      if (isFunction(microApp.options.beforeHijackOwnerDocument)) {
+        const nodeRawOwnerDocument = rawOwnerDocumentDesc.get!.call(this)
+        if (microApp.options.beforeHijackOwnerDocument?.({ node: this, ownerDocument: nodeRawOwnerDocument, appName })) {
+          return nodeRawOwnerDocument
+        }
+      }
       return this.__PURE_ELEMENT__ || this === microDocument
         ? rawOwnerDocumentDesc.get!.call(this)
         : microDocument
