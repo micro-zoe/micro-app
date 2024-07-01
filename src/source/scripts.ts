@@ -486,6 +486,9 @@ export function runScript (
   replaceElement?: HTMLScriptElement,
 ): void {
   try {
+    if (app.isUnmounted()) {
+      return
+    }
     actionsBeforeRunScript(app)
     const appSpaceData = scriptInfo.appSpace[app.name]
     const sandboxType = getSandboxType(app, scriptInfo)

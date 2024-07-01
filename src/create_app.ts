@@ -318,6 +318,9 @@ export default class CreateApp implements AppInterface {
           this.sandBox?.actionBeforeExecScripts(this.container)
           // if all js are executed, param isFinished will be true
           execScripts(this, (isFinished: boolean) => {
+            if (this.isUnmounted()) {
+              return
+            }
             if (!this.umdMode) {
               const { mount, unmount } = this.getUmdLibraryHooks()
               /**
