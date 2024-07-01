@@ -1,6 +1,7 @@
 /* eslint-disable no-cond-assign */
 import { CallableFunctionForInteract, AppName } from '@micro-app/types'
 import { logError, isFunction, isPlainObject, assign, defer } from '../libs/utils'
+import microApp from '../micro_app'
 
 export default class EventCenter {
   public eventList = new Map<string, {
@@ -123,6 +124,7 @@ export default class EventCenter {
         autoTrigger &&
         Object.keys(eventInfo.data).length &&
         (
+          microApp.options['event-center-legacy'] ||
           !this.queue.includes(name) ||
           this.isEqual(eventInfo.data, eventInfo.tempData)
         )
@@ -168,10 +170,11 @@ export default class EventCenter {
   public dispatch (
     name: string,
     data: Record<PropertyKey, unknown>,
-    nextStep: CallableFunction,
+    nextStep?: CallableFunction,
     force?: boolean,
     dispatchDataEvent?: CallableFunction,
   ): void {
+    const eventCenterLegacy = microApp.options['event-center-legacy']
     if (this.isLegalName(name)) {
       if (!isPlainObject(data)) {
         return logError('event-center: data must be object')
@@ -179,8 +182,19 @@ export default class EventCenter {
 
       let eventInfo = this.eventList.get(name)
       if (eventInfo) {
-        eventInfo.tempData = assign({}, eventInfo.tempData || eventInfo.data, data)
-        !eventInfo.force && (eventInfo.force = !!force)
+        if (!eventCenterLegacy) {
+          eventInfo.tempData = assign({}, eventInfo.tempData || eventInfo.data, data)
+          !eventInfo.force && (eventInfo.force = !!force)
+        } else {
+          // keep 0.x behavior
+          // Update when the data is not equal
+          if (eventInfo.data !== data) {
+            eventInfo.data = data
+            for (const f of eventInfo.callbacks) {
+              f(data)
+            }
+          }
+        }
       } else {
         eventInfo = {
           data: data,
@@ -190,10 +204,13 @@ export default class EventCenter {
         /**
          * When sent data to parent, eventInfo probably does not exist, because parent may listen to datachange
          */
-        eventInfo.force = true
+        !eventCenterLegacy && (eventInfo.force = true)
       }
-      // add to queue, event eventInfo is null
-      this.enqueue(name, nextStep, dispatchDataEvent)
+
+      if (!eventCenterLegacy && nextStep) {
+        // add to queue, event eventInfo is null
+        this.enqueue(name, nextStep, dispatchDataEvent)
+      }
     }
   }
 

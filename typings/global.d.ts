@@ -338,6 +338,7 @@ declare module '@micro-app/types' {
     'disable-sandbox'?: boolean
     'disable-memory-router'?: boolean
     'disable-patch-request'?: boolean
+    'event-center-legacy'?: boolean
     'keep-router-state'?: boolean
     'keep-alive'?: boolean
     'clear-data'?: boolean

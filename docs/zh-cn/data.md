@@ -5,6 +5,17 @@
 同时我们也提供了全局通信，方便跨应用之间的数据通信。
 
 
+> [!NOTE]
+> 如果需要保留 0.x 的数据通信行为，我们提供了全局配置 
+> ```js
+> import microApp from '@micro-zoe/micro-app'
+> microApp.start({
+>   'event-center-legacy': true, // 全局配置 0.x 数据通信行为，默认为false
+> })
+> ```
+> [0.x 数据通信文档](https://micro-zoe.github.io/micro-app/0.x/#/zh-cn/data)
+
+
 ## 一、子应用获取来自主应用的数据
 
 有两种方式获取来自主应用的数据：
