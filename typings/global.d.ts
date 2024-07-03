@@ -359,6 +359,30 @@ declare module '@micro-app/types' {
     fetch?: fetchType
     globalAssets?: globalAssetsType,
     excludeAssetFilter?: (assetUrl: string) => boolean
+    /**
+     * The operation before hijacking the ownerdocument of the node
+     * true returns the ownerdocument of the node, false performs the next step
+     *
+     * Scenes:
+     *  1. tinymce editor
+     *
+     * Issue: https://github.com/micro-zoe/micro-app/issues/916
+     *
+     * @example
+     * ```js
+     * microApp.start({
+     *   beforeHijackOwnerDocument({ node, ownerDocument, appName }) {
+     *     return ownerDocument?.body?.id === 'tinymce'
+     *   }
+     * })
+     * ```
+     *
+     * @param params
+     * @param params.node - current node
+     * @param params.ownerDocument - node raw ownerDocument
+     * @param params.appName - current appName
+     */
+    beforeHijackOwnerDocument?: (params: { node: Node, ownerDocument: Document, appName: AppName }) => boolean
     getRootElementParentNode?: (node: Node, appName: AppName) => void
     customProxyDocumentProps?: Map<string | number | symbol, (value: unknown) => void>
   }
