@@ -10,6 +10,7 @@ import {
   logError,
   getRootContainer,
 } from '../libs/utils'
+import microApp from '../micro_app'
 
 const eventCenter = new EventCenter()
 
@@ -231,23 +232,32 @@ export class EventCenterForMicroApp extends EventCenterForGlobal {
   dispatch (data: Record<PropertyKey, unknown>, nextStep?: CallableFunction, force?: boolean): void {
     removeDomScope()
 
-    eventCenter.dispatch(
-      createEventName(this.appName, false),
-      data,
-      (resArr: unknown[]) => isFunction(nextStep) && nextStep(resArr),
-      force,
-      () => {
-        const app = appInstanceMap.get(this.appName)
-        if (app?.container && isPlainObject(data)) {
-          const event = new CustomEvent('datachange', {
-            detail: {
-              data: eventCenter.getData(createEventName(this.appName, false))
-            }
-          })
+    const dispatchDataEvent = () => {
+      const app = appInstanceMap.get(this.appName)
+      if (app?.container && isPlainObject(data)) {
+        const event = new CustomEvent('datachange', {
+          detail: {
+            data: eventCenter.getData(createEventName(this.appName, false))
+          }
+        })
 
-          getRootContainer(app.container).dispatchEvent(event)
-        }
-      })
+        getRootContainer(app.container).dispatchEvent(event)
+      }
+    }
+
+    if (!microApp.options['event-center-legacy']) {
+      eventCenter.dispatch(
+        createEventName(this.appName, false),
+        data,
+        (resArr: unknown[]) => isFunction(nextStep) && nextStep(resArr),
+        force,
+        () => {
+          dispatchDataEvent()
+        })
+    } else {
+      eventCenter.dispatch(createEventName(this.appName, false), data)
+      dispatchDataEvent()
+    }
   }
 
   forceDispatch (data: Record<PropertyKey, unknown>, nextStep?: CallableFunction): void {
