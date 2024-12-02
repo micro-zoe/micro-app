@@ -20,7 +20,7 @@ interface Worker {
 const originalWorker = window.Worker
 
 function isSameOrigin(url: string | URL): boolean {
-  if (url instanceof URL && url.protocol === 'blob:') {
+  if ((url instanceof URL && url.protocol === 'blob:') || (typeof url === 'string' && url.startsWith('blob:'))) {
     // 如果 url 是 Blob URL，直接返回 true
     return true
   }
