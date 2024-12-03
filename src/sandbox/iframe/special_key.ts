@@ -23,6 +23,7 @@ export const escape2RawWindowRegExpKeys = [
   /^screen/i,
   /^scroll/i,
   /X$|Y$/,
+  /frameElement$/,
 ]
 
 export const uniqueDocumentElement = [
