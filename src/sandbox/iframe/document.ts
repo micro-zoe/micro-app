@@ -265,6 +265,7 @@ function patchDocumentProperty (
       ['links', () => microRootDocument.prototype.querySelectorAll.call(microDocument, 'a')],
       // unique keys of micro-app
       ['microAppElement', () => appInstanceMap.get(appName)?.container],
+
       ['__MICRO_APP_NAME__', () => appName],
     ]
 
