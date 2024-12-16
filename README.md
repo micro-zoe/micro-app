@@ -30,4 +30,5 @@ English｜[简体中文](./README.zh-cn.md)
 To facilitate unified management of open-source projects, we need to migrate Micro-app to jd.
 
 New official website address:[https://jd-opensource.github.io/micro-app/](https://jd-opensource.github.io/micro-app/)
+
 New GitHub address:[https://github.com/jd-opensource/micro-app](https://github.com/jd-opensource/micro-app)
